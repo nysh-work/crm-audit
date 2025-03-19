@@ -1,0 +1,135 @@
+/* Print-specific styles for Audit Fee Calculator */
+
+@media print {
+  /* Hide non-essential elements */
+  header, 
+  footer,
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Force background colors and images to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Ensure the content fills the page */
+  html, 
+  body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+  }
+  
+  /* Improve layout for printing */
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Make sure tables look good */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    page-break-inside: auto;
+  }
+  
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  
+  td, th {
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  /* Make sure that inputs show their values */
+  input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+  
+  /* Header styling for print */
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  h2, h3 {
+    font-size: 18px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  
+  /* Create specific print sections */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #000;
+    padding-bottom: 10px;
+  }
+  
+  .print-header h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .print-header p {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* Summary section styling */
+  .summary-section {
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  /* Footer for printed pages */
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: #666;
+    border-top: 1px solid #ddd;
+    padding-top: 5px;
+  }
+  
+  /* Date stamp */
+  .print-date {
+    display: block !important;
+    text-align: right;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  /* Optimize grid layouts for print */
+  .grid {
+    display: block !important;
+  }
+  
+  .grid > div {
+    margin-bottom: 20px;
+  }
+} 
