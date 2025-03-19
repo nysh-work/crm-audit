@@ -17,6 +17,20 @@
     --background-start-rgb: 20, 25, 35;
     --background-end-rgb: 0, 0, 0;
   }
+  body {
+    color: rgb(var(--foreground-rgb));
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    );
+  }
+  .text-card-foreground {
+    @apply text-gray-100;
+  }
+  .bg-card {
+    @apply bg-gray-800;
+  }
 }
 
 * {

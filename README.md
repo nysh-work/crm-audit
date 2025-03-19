@@ -1,155 +1,137 @@
-# Audit Fee Calculator
+# Audit Fee Management System
 
-A multi-step form application to calculate proposed audit fees based on historical data. This application allows users to enter financial data and historical fee information for the past 4 years, then calculates a proposed fee structure for the upcoming audit period.
+A comprehensive web application for managing audit fees and client information. This system helps audit firms streamline their fee calculation process, manage client relationships, and maintain detailed audit records.
 
 ## Features
 
-- **Multi-Step Form**: Collects data in a structured, step-by-step process
-- **Financial Data Entry**: Record revenue, total assets, and other financial metrics
-- **Service History**: Track which audit services were provided and their fees
-- **Complexity Factors**: Adjust calculations based on client complexity
-- **Fee Calculation**: Automatically calculate proposed fees based on historical data
-- **Data Persistence**: Save form progress in browser's localStorage
-- **Export/Print**: Generate printable summaries and export data as JSON
-- **Responsive Design**: Works on desktop and mobile devices
+### Client Management
+- **Client Dashboard**: View and manage all clients in one place
+- **Client Profiles**: Detailed client information and audit history
+- **Search & Filter**: Quickly find specific clients
+- **CRUD Operations**: Add, edit, and delete client information
+
+### Audit Fee Management
+- **Fee Calculator**: Calculate audit fees based on multiple factors
+- **Invoice Generation**: Create and manage invoices
+- **Payment Tracking**: Monitor payment status and history
+- **Fee History**: Access historical fee records
+- **Complexity Assessment**: Adjust fees based on audit complexity
+
+### User Interface
+- **Modern Design**: Clean, professional interface using Tailwind CSS
+- **Responsive Layout**: Works seamlessly on all devices
+- **Dark/Light Mode**: Support for both themes
+- **Intuitive Navigation**: Easy access to all features
+- **Loading States**: Clear feedback during operations
+- **Error Handling**: Graceful error management
+
+### Authentication & Security
+- **Secure Login**: Protected access to the system
+- **Role-Based Access**: Different permissions for Admin, Auditor, and Client
+- **Session Management**: Secure user sessions
+- **Password Reset**: Self-service password recovery
+
+### Reporting & Analytics
+- **Fee Reports**: Generate detailed audit fee reports
+- **Data Export**: Export data in PDF and Excel formats
+- **Analytics Dashboard**: Visual insights into audit operations
+- **Custom Reports**: Create tailored reports as needed
 
 ## Getting Started
 
 ### Prerequisites
-
 - Node.js (v14 or later)
 - npm or yarn
+- MongoDB (for data storage)
 
 ### Installation
 
-1. Clone this repository:
-   ```
+1. Clone the repository:
+   ```bash
    git clone <repository-url>
-   cd audit-fee-calculator
+   cd audit-fee
    ```
 
 2. Install dependencies:
-   ```
+   ```bash
    npm install
    # or
    yarn install
    ```
 
-3. Run the development server:
+3. Set up environment variables:
+   Create a `.env.local` file with the following variables:
    ```
+   MONGODB_URI=your_mongodb_connection_string
+   NEXTAUTH_SECRET=your_nextauth_secret
+   NEXTAUTH_URL=http://localhost:3000
+   ```
+
+4. Run the development server:
+   ```bash
    npm run dev
    # or
    yarn dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
-
-## Usage
-
-The application guides users through 4 steps:
-
-1. **Financial Data Entry**: Enter financial information for each of the past 4 years
-2. **Services and Fees**: Select which services were provided and enter fees charged
-3. **Additional Questions**: Answer questions about client complexity
-4. **Fee Calculation & Summary**: View proposed fees and adjust if necessary
-
-### Data Persistence
-
-The application automatically saves form data to your browser's localStorage, so you can continue where you left off if you close the browser.
-
-### Exporting Data
-
-On the summary page, you can:
-- Print the summary using the "Print Summary" button
-- Export all data as a JSON file using the "Export Data" button
-
-## Customizing Fee Calculations
-
-You can customize how fees are calculated by modifying the constants and functions in `utils/feeCalculation.js`:
-
-### Base Fees
-
-Adjust the base fees for each service type:
-
-```javascript
-export const BASE_FEES = {
-  statutoryAudit: 200000,
-  ifcTesting: 100000,
-  taxAudit: 75000,
-  // ... other services
-};
-```
-
-### Revenue Multipliers
-
-Adjust how client size affects fees:
-
-```javascript
-export const REVENUE_MULTIPLIERS = {
-  small: { threshold: 100, factor: 0.8 },
-  medium: { threshold: 500, factor: 1.0 },
-  large: { threshold: 1000, factor: 1.3 },
-  veryLarge: { threshold: Infinity, factor: 1.5 }
-};
-```
-
-### Complexity Factors
-
-Adjust how complexity factors affect fees:
-
-```javascript
-export const COMPLEXITY_FACTORS = {
-  hasComplexGroupStructure: 0.05,
-  hasInternationalTransactions: 0.05,
-  // ... other factors
-};
-```
-
-### Growth Factors
-
-Adjust the default and maximum growth rates:
-
-```javascript
-export const GROWTH_FACTORS = {
-  defaultAnnualIncrease: 0.05, // 5% default increase
-  maxGrowthFactor: 0.15      // maximum 15% increase
-};
-```
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Project Structure
 
 ```
-audit-fee-calculator/
+audit-fee/
 ├── components/           # React components
-│   ├── steps/            # Form step components
-│   ├── ui/               # UI components
-│   └── AuditFeeWizard.js # Main wizard component
-├── context/              # React context
-│   └── AuditFormContext.js # Form state management
-├── pages/                # Next.js pages
-│   ├── _app.js           # Application entry point
-│   └── index.js          # Main page
-├── public/               # Static assets
-├── styles/               # CSS styles
-│   ├── globals.css       # Global styles
-│   └── print.css         # Print-specific styles
-└── utils/                # Utility functions
-    ├── feeCalculation.js # Fee calculation logic
-    └── localStorage.js   # Local storage helpers
+│   ├── clients/         # Client-related components
+│   ├── fees/           # Fee calculation components
+│   ├── layout/         # Layout components
+│   └── ui/             # Reusable UI components
+├── pages/              # Next.js pages
+│   ├── api/           # API routes
+│   ├── clients/       # Client pages
+│   └── fees/          # Fee management pages
+├── lib/               # Utility functions and configurations
+├── models/            # Database models
+├── public/            # Static assets
+├── styles/            # CSS styles
+└── utils/             # Helper functions
 ```
 
 ## Technologies Used
 
-- **React**: UI library
-- **Next.js**: React framework
-- **Tailwind CSS**: Utility-first CSS framework
-- **localStorage API**: For client-side data persistence
+- **Frontend**:
+  - Next.js 14
+  - React
+  - Tailwind CSS
+  - TypeScript
+
+- **Backend**:
+  - Next.js API Routes
+  - MongoDB
+  - NextAuth.js
+
+- **Development**:
+  - ESLint
+  - Prettier
+  - TypeScript
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgements
+## Support
 
-- Built for financial professionals to streamline the audit fee proposal process
-- Inspired by real-world audit fee calculation workflows 
+For support, please contact the development team or create an issue in the repository.
+
+## Acknowledgments
+
+- Built for audit firms to streamline their fee management process
+- Inspired by industry best practices in audit fee calculation
+- Special thanks to all contributors and users 
