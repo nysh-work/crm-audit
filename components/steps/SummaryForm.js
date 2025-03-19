@@ -4,6 +4,7 @@ import { CLIENT_TYPES } from '../../context/AuditFormContext';
 import { formatCurrency, formatNumber } from '../../utils/helpers';
 import { FiInfo, FiDollarSign, FiBriefcase, FiHelpCircle, FiUser, FiUsers } from 'react-icons/fi';
 import { getPersonnelById } from '../../utils/mockDatabase';
+import { calculateProfitCAGR } from '../../utils/cagr-feeCalculation';
 
 // Remove or comment out the CLIENT_TYPE_MULTIPLIERS import if it doesn't exist
 // import { CLIENT_TYPE_MULTIPLIERS } from '../../utils/feeCalculation';
@@ -177,6 +178,11 @@ const SummaryForm = () => {
     ...defaultFee
   };
 
+  const profitCAGR = React.useMemo(() => {
+    if (!yearlyData || !Array.isArray(yearlyData)) return 0;
+    return calculateProfitCAGR(yearlyData);
+  }, [yearlyData]);
+
   return (
     <div className="space-y-8">
       {/* Client Information */}
@@ -297,7 +303,7 @@ const SummaryForm = () => {
               </div>
               <div className="bg-green-50 p-3 rounded-md">
                 <p className="text-sm text-gray-500">Profit Growth</p>
-                <p className="text-lg font-semibold">{additionalData?.financialAnalysis?.profitCAGR?.toFixed(2) || '6.2'}%</p>
+                <p className="text-lg font-semibold">{profitCAGR.toFixed(2)}%</p>
               </div>
             </div>
           </div>
@@ -431,4 +437,4 @@ const SummaryForm = () => {
   );
 };
 
-export default SummaryForm; 
+export default SummaryForm;

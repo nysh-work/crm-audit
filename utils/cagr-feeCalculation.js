@@ -8,14 +8,14 @@
 /**
  * Calculate the Compound Annual Growth Rate (CAGR)
  * 
- * @param {number} startValue - The initial value
- * @param {number} endValue - The final value
- * @param {number} years - Number of years between the values
- * @returns {number} - The CAGR as a decimal (e.g., 0.10 for 10%)
+ * @param {number} initialValue - The initial value
+ * @param {number} finalValue - The final value
+ * @param {number} numberOfYears - Number of years between the values
+ * @returns {number} - The CAGR as a percentage (e.g., 10 for 10%)
  */
-export const calculateCAGR = (startValue, endValue, years) => {
-  if (startValue <= 0 || years <= 0) return 0;
-  return Math.pow(endValue / startValue, 1 / years) - 1;
+export const calculateCAGR = (initialValue, finalValue, numberOfYears) => {
+  if (initialValue <= 0 || numberOfYears === 0) return 0;
+  return (Math.pow(finalValue / initialValue, 1 / numberOfYears) - 1) * 100;
 };
 
 /**
@@ -186,4 +186,28 @@ export const calculateCAGRBasedFee = (yearlyData, inflationRate = 0) => {
       inflationRate
     }
   };
-}; 
+};
+
+/**
+ * Calculate the Compound Annual Growth Rate (CAGR) for profit
+ * 
+ * @param {Array} yearlyData - Array of yearly financial data
+ * @returns {number} - The CAGR for profit as a percentage or 0 if insufficient data
+ */
+export const calculateProfitCAGR = (yearlyData) => {
+  if (!yearlyData || yearlyData.length < 2) return 0;
+
+  const validYears = yearlyData.filter(year => 
+    year?.financialData?.surplusDeficit || year?.financialData?.netProfit
+  );
+
+  if (validYears.length < 2) return 0;
+
+  const firstYear = validYears[0];
+  const lastYear = validYears[validYears.length - 1];
+  
+  const initialValue = firstYear.financialData.surplusDeficit || firstYear.financialData.netProfit;
+  const finalValue = lastYear.financialData.surplusDeficit || lastYear.financialData.netProfit;
+  
+  return calculateCAGR(initialValue, finalValue, validYears.length - 1);
+};
