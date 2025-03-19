@@ -211,3 +211,27 @@ export const calculateProfitCAGR = (yearlyData) => {
   
   return calculateCAGR(initialValue, finalValue, validYears.length - 1);
 };
+
+/**
+ * Calculate the Compound Annual Growth Rate (CAGR) for turnover
+ * 
+ * @param {Array} yearlyData - Array of yearly financial data
+ * @returns {number} - The CAGR for turnover as a percentage or 0 if insufficient data
+ */
+export const calculateTurnoverCAGR = (yearlyData) => {
+  if (!yearlyData || yearlyData.length < 2) return 0;
+
+  const validYears = yearlyData.filter(year => 
+    year?.financialData?.turnover
+  );
+
+  if (validYears.length < 2) return 0;
+
+  const firstYear = validYears[0];
+  const lastYear = validYears[validYears.length - 1];
+  
+  const initialValue = firstYear.financialData.turnover;
+  const finalValue = lastYear.financialData.turnover;
+  
+  return calculateCAGR(initialValue, finalValue, validYears.length - 1);
+};

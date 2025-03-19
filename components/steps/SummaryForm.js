@@ -4,7 +4,7 @@ import { CLIENT_TYPES } from '../../context/AuditFormContext';
 import { formatCurrency, formatNumber } from '../../utils/helpers';
 import { FiInfo, FiDollarSign, FiBriefcase, FiHelpCircle, FiUser, FiUsers } from 'react-icons/fi';
 import { getPersonnelById } from '../../utils/mockDatabase';
-import { calculateProfitCAGR } from '../../utils/cagr-feeCalculation';
+import { calculateProfitCAGR, calculateTurnoverCAGR } from '../../utils/cagr-feeCalculation';
 
 // Remove or comment out the CLIENT_TYPE_MULTIPLIERS import if it doesn't exist
 // import { CLIENT_TYPE_MULTIPLIERS } from '../../utils/feeCalculation';
@@ -183,6 +183,11 @@ const SummaryForm = () => {
     return calculateProfitCAGR(yearlyData);
   }, [yearlyData]);
 
+  const turnoverCAGR = React.useMemo(() => {
+    if (!yearlyData || !Array.isArray(yearlyData)) return 0;
+    return calculateTurnoverCAGR(yearlyData);
+  }, [yearlyData]);
+
   return (
     <div className="space-y-8">
       {/* Client Information */}
@@ -299,7 +304,7 @@ const SummaryForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-blue-50 p-3 rounded-md">
                 <p className="text-sm text-gray-500">Turnover Growth</p>
-                <p className="text-lg font-semibold">{additionalData?.financialAnalysis?.turnoverCAGR?.toFixed(2) || '5.5'}%</p>
+                <p className="text-lg font-semibold">{turnoverCAGR.toFixed(2)}%</p>
               </div>
               <div className="bg-green-50 p-3 rounded-md">
                 <p className="text-sm text-gray-500">Profit Growth</p>
