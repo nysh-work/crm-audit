@@ -1,7 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useAuditForm } from '../../context/AuditFormContext';
-import { FiSearch, FiUser, FiUserCheck, FiBriefcase } from 'react-icons/fi';
+import { FiSearch, FiUser, FiUserCheck, FiBriefcase, FiInfo } from 'react-icons/fi';
 import { clientsDatabase, personnelDatabase, getPersonnelByRole } from '../../utils/mockDatabase';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Alert, AlertDescription } from '../ui/alert';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import PersonnelSection from './PersonnelSection';
+
+const FieldWithTooltip = ({ label, tooltip, children, required }) => (
+  <div className="space-y-2">
+    <div className="flex items-center space-x-2">
+      <Label>
+        {label} {required && <span className="text-destructive">*</span>}
+      </Label>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <FiInfo className="h-4 w-4 text-muted-foreground cursor-help" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="max-w-xs">{tooltip}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+    {children}
+  </div>
+);
 
 const ClientInfoForm = () => {
   const { 
@@ -65,8 +98,29 @@ const ClientInfoForm = () => {
     setShowClientDropdown(false);
   };
   
-  // Handle manual client info input
+  // Add validation state
+  const [errors, setErrors] = useState({});
+
+  // Validate form fields
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'clientName':
+        return !value ? 'Client name is required' : '';
+      case 'CIN':
+        return value && !/^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/.test(value) 
+          ? 'Invalid CIN format' : '';
+      case 'PAN':
+        return value && !/^[A-Z]{5}\d{4}[A-Z]$/.test(value)
+          ? 'Invalid PAN format' : '';
+      default:
+        return '';
+    }
+  };
+
+  // Update handler to include validation
   const handleClientInfoChange = (field, value) => {
+    const error = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: error }));
     updateClientInfo(field, value);
   };
   
@@ -82,306 +136,218 @@ const ClientInfoForm = () => {
   };
   
   return (
-    <div className="space-y-8">
-      <div className="border rounded-lg p-6 mb-6 bg-gray-50 shadow-sm">
-        <div className="flex items-center mb-4">
-          <FiBriefcase className="text-blue-600 w-5 h-5 mr-2" />
-          <h3 className="text-lg font-medium text-gray-800">Client Information</h3>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Client Search & Selection */}
-          <div className="col-span-1 md:col-span-2">
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Search Client
-            </label>
-            <div className="relative">
-              <div className="flex">
-                <div className="relative flex-grow">
-                  <input
-                    type="text"
-                    value={clientSearch}
-                    onChange={handleClientSearchChange}
-                    onFocus={() => setShowClientDropdown(true)}
-                    className="w-full p-2 pr-8 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="Search by client name, CIN, or PAN"
-                  />
-                  <FiSearch className="absolute right-3 top-2.5 text-gray-400" />
+    <div className="space-y-6">
+      <Card className="bg-card">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <FiBriefcase className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">Client Information</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Client Search & Selection */}
+            <div className="col-span-1 md:col-span-2 space-y-2">
+              <Label htmlFor="clientSearch">Search Client</Label>
+              <div className="relative">
+                <div className="flex space-x-2">
+                  <div className="relative flex-grow">
+                    <Input
+                      id="clientSearch"
+                      type="text"
+                      value={clientSearch}
+                      onChange={handleClientSearchChange}
+                      onFocus={() => setShowClientDropdown(true)}
+                      className="pr-8"
+                      placeholder="Search by client name, CIN, or PAN"
+                    />
+                    <FiSearch className="absolute right-3 top-2.5 text-muted-foreground" />
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setClientInfo(initializeClientInfo());
+                      setClientSearch('');
+                    }}
+                  >
+                    Clear
+                  </Button>
                 </div>
-                <button
-                  onClick={() => {
-                    setClientInfo(initializeClientInfo());
-                    setClientSearch('');
-                  }}
-                  className="ml-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-                >
-                  Clear
-                </button>
-              </div>
-              
-              {showClientDropdown && filteredClients.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {filteredClients.map(client => (
-                    <div
-                      key={client.id}
-                      className="p-2 hover:bg-blue-50 cursor-pointer border-b"
-                      onClick={() => handleClientSelect(client)}
-                    >
-                      <div className="font-medium">{client.clientName}</div>
-                      <div className="text-xs text-gray-500">
-                        CIN: {client.CIN} | PAN: {client.PAN} | Sector: {client.sector}
+                
+                {showClientDropdown && filteredClients.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredClients.map(client => (
+                      <div
+                        key={client.id}
+                        className="p-3 hover:bg-accent cursor-pointer border-b"
+                        onClick={() => handleClientSelect(client)}
+                      >
+                        <div className="font-medium">{client.clientName}</div>
+                        <div className="text-xs text-muted-foreground">
+                          CIN: {client.CIN} | PAN: {client.PAN} | Sector: {client.sector}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Search for existing client or enter new client details below
+              </p>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              Search for existing client or enter new client details below
-            </p>
-          </div>
-          
-          {/* Client Name */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Client Name
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.clientName}
-              onChange={(e) => handleClientInfoChange('clientName', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter client name"
-              required
-            />
-          </div>
-          
-          {/* Client CIN */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Corporate Identification Number (CIN)
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.CIN}
-              onChange={(e) => handleClientInfoChange('CIN', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter CIN"
-            />
-          </div>
-          
-          {/* Client PAN */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Permanent Account Number (PAN)
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.PAN}
-              onChange={(e) => handleClientInfoChange('PAN', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter PAN"
-            />
-          </div>
-          
-          {/* Client Sector */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Business Sector
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.sector}
-              onChange={(e) => handleClientInfoChange('sector', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="E.g., Manufacturing, Technology, etc."
-            />
-          </div>
-          
-          {/* Paid-up Capital */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Paid-up Capital (₹ in Lakhs)
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.paidUpCapital}
-              onChange={(e) => handleClientInfoChange('paidUpCapital', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter amount in lakhs"
-            />
-          </div>
-          
-          {/* Latest Turnover */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Latest Turnover (₹ in Lakhs)
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.latestTurnover}
-              onChange={(e) => handleClientInfoChange('latestTurnover', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter amount in lakhs"
-            />
-          </div>
-          
-          {/* Borrowings */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Borrowings (₹ in Lakhs)
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.borrowings}
-              onChange={(e) => handleClientInfoChange('borrowings', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter amount in lakhs"
-            />
-          </div>
-          
-          {/* Net Profit */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Net Profit (₹ in Lakhs)
-            </label>
-            <input
-              type="text"
-              value={additionalData.clientInfo.netProfit}
-              onChange={(e) => handleClientInfoChange('netProfit', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Enter amount in lakhs"
-            />
-          </div>
-        </div>
-      </div>
-      
-      <div className="border rounded-lg p-6 mb-6 bg-gray-50 shadow-sm">
-        <div className="flex items-center mb-4">
-          <FiUser className="text-blue-600 w-5 h-5 mr-2" />
-          <h3 className="text-lg font-medium text-gray-800">Engagement Personnel</h3>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Engagement Partner */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Engagement Partner
-              <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={additionalData.personnelInfo.engagementPartnerId || ''}
-              onChange={(e) => handlePersonnelChange('engagementPartnerId', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            
+            {/* Client Name */}
+            <FieldWithTooltip
+              label="Client Name"
+              tooltip="Enter the legal name of the client company"
               required
             >
-              <option value="">Select Engagement Partner</option>
-              {partners
-                .filter(p => p.designation.includes('Engagement Partner'))
-                .map(partner => (
-                  <option key={partner.id} value={partner.id}>
-                    {partner.name} ({partner.membershipNumber})
-                  </option>
-                ))
-              }
-            </select>
-            <p className="mt-1 text-xs text-gray-500">
-              The partner responsible for the overall engagement
-            </p>
-          </div>
-          
-          {/* Audit Manager */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Audit Manager
-            </label>
-            <select
-              value={additionalData.personnelInfo.auditManagerId || ''}
-              onChange={(e) => handlePersonnelChange('auditManagerId', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              <Input
+                id="clientName"
+                type="text"
+                value={additionalData.clientInfo.clientName}
+                onChange={(e) => handleClientInfoChange('clientName', e.target.value)}
+                placeholder="Enter client name"
+                required
+              />
+              {errors.clientName && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription>{errors.clientName}</AlertDescription>
+                </Alert>
+              )}
+            </FieldWithTooltip>
+            
+            {/* Client CIN */}
+            <FieldWithTooltip
+              label="Corporate Identification Number (CIN)"
+              tooltip="21-character unique company identification number issued by RoC"
             >
-              <option value="">Select Audit Manager</option>
-              {managers.map(manager => (
-                <option key={manager.id} value={manager.id}>
-                  {manager.name} ({manager.membershipNumber})
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-gray-500">
-              The manager overseeing the day-to-day audit activities
-            </p>
-          </div>
-          
-          {/* Concurring Partner */}
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">
-              Concurring Partner
-            </label>
-            <select
-              value={additionalData.personnelInfo.concurringPartnerId || ''}
-              onChange={(e) => handlePersonnelChange('concurringPartnerId', e.target.value)}
-              className="w-full p-2 border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              <Input
+                id="cin"
+                type="text"
+                value={additionalData.clientInfo.CIN}
+                onChange={(e) => handleClientInfoChange('CIN', e.target.value)}
+                placeholder="Enter CIN"
+              />
+              {errors.CIN && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription>{errors.CIN}</AlertDescription>
+                </Alert>
+              )}
+            </FieldWithTooltip>
+            
+            {/* Client PAN */}
+            <FieldWithTooltip
+              label="Permanent Account Number (PAN)"
+              tooltip="10-character alphanumeric tax identification number"
             >
-              <option value="">Select Concurring Partner</option>
-              {partners
-                .filter(p => p.designation.includes('Concurring Partner'))
-                .map(partner => (
-                  <option key={partner.id} value={partner.id}>
-                    {partner.name} ({partner.membershipNumber})
-                  </option>
-                ))
-              }
-            </select>
-            <p className="mt-1 text-xs text-gray-500">
-              The partner providing an objective review of the audit
-            </p>
+              <Input
+                id="pan"
+                type="text"
+                value={additionalData.clientInfo.PAN}
+                onChange={(e) => handleClientInfoChange('PAN', e.target.value)}
+                placeholder="Enter PAN"
+              />
+              {errors.PAN && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription>{errors.PAN}</AlertDescription>
+                </Alert>
+              )}
+            </FieldWithTooltip>
+            
+            {/* Client Sector */}
+            <FieldWithTooltip
+              label="Business Sector"
+              tooltip="Primary industry sector of the client's business operations"
+            >
+              <Input
+                id="sector"
+                type="text"
+                value={additionalData.clientInfo.sector}
+                onChange={(e) => handleClientInfoChange('sector', e.target.value)}
+                placeholder="E.g., Manufacturing, Technology, etc."
+              />
+            </FieldWithTooltip>
+            
+            {/* Financial Information Section */}
+            <div className="col-span-1 md:col-span-2">
+              <Alert className="mb-4">
+                <AlertDescription>
+                  Please enter all financial amounts in lakhs (₹). For example, ₹10,00,000 should be entered as 10.
+                </AlertDescription>
+              </Alert>
+            </div>
+            
+            {/* Paid-up Capital */}
+            <FieldWithTooltip
+              label="Paid-up Capital"
+              tooltip="Total amount of share capital that has been paid by shareholders"
+            >
+              <Input
+                id="paidUpCapital"
+                type="text"
+                value={additionalData.clientInfo.paidUpCapital}
+                onChange={(e) => handleClientInfoChange('paidUpCapital', e.target.value)}
+                placeholder="Enter amount in lakhs"
+              />
+            </FieldWithTooltip>
+            
+            {/* Latest Turnover */}
+            <FieldWithTooltip
+              label="Latest Turnover"
+              tooltip="Total revenue generated by the company in the most recent financial year"
+            >
+              <Input
+                id="latestTurnover"
+                type="text"
+                value={additionalData.clientInfo.latestTurnover}
+                onChange={(e) => handleClientInfoChange('latestTurnover', e.target.value)}
+                placeholder="Enter amount in lakhs"
+              />
+            </FieldWithTooltip>
+            
+            {/* Borrowings */}
+            <FieldWithTooltip
+              label="Borrowings"
+              tooltip="Total outstanding loans and borrowings from all sources"
+            >
+              <Input
+                id="borrowings"
+                type="text"
+                value={additionalData.clientInfo.borrowings}
+                onChange={(e) => handleClientInfoChange('borrowings', e.target.value)}
+                placeholder="Enter amount in lakhs"
+              />
+            </FieldWithTooltip>
+            
+            {/* Net Profit */}
+            <FieldWithTooltip
+              label="Net Profit"
+              tooltip="Profit after tax for the most recent financial year"
+            >
+              <Input
+                id="netProfit"
+                type="text"
+                value={additionalData.clientInfo.netProfit}
+                onChange={(e) => handleClientInfoChange('netProfit', e.target.value)}
+                placeholder="Enter amount in lakhs"
+              />
+            </FieldWithTooltip>
           </div>
-        </div>
-        
-        {/* Selected Personnel Summary */}
-        {(additionalData.personnelInfo.engagementPartnerId || 
-          additionalData.personnelInfo.auditManagerId || 
-          additionalData.personnelInfo.concurringPartnerId) && (
-          <div className="mt-6 p-4 bg-gray-100 rounded-md">
-            <h4 className="text-sm font-medium mb-2 text-gray-800">Selected Personnel:</h4>
-            <ul className="text-sm space-y-1">
-              {additionalData.personnelInfo.engagementPartnerId && (
-                <li className="flex items-center">
-                  <FiUserCheck className="text-green-500 mr-2" />
-                  <span className="text-gray-700">Engagement Partner: </span>
-                  <span className="font-medium ml-1">
-                    {getPersonnelNameById(additionalData.personnelInfo.engagementPartnerId)}
-                  </span>
-                </li>
-              )}
-              {additionalData.personnelInfo.auditManagerId && (
-                <li className="flex items-center">
-                  <FiUserCheck className="text-green-500 mr-2" />
-                  <span className="text-gray-700">Audit Manager: </span>
-                  <span className="font-medium ml-1">
-                    {getPersonnelNameById(additionalData.personnelInfo.auditManagerId)}
-                  </span>
-                </li>
-              )}
-              {additionalData.personnelInfo.concurringPartnerId && (
-                <li className="flex items-center">
-                  <FiUserCheck className="text-green-500 mr-2" />
-                  <span className="text-gray-700">Concurring Partner: </span>
-                  <span className="font-medium ml-1">
-                    {getPersonnelNameById(additionalData.personnelInfo.concurringPartnerId)}
-                  </span>
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
+
+      <PersonnelSection 
+        additionalData={additionalData}
+        handlePersonnelChange={handlePersonnelChange}
+        partners={partners}
+        managers={managers}
+        getPersonnelNameById={getPersonnelNameById}
+      />
     </div>
   );
 };
 
-// Helper function to initialize client info
 const initializeClientInfo = () => {
   return {
     clientId: null,
